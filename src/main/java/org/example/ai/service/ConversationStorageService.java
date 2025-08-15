@@ -148,6 +148,26 @@ public class ConversationStorageService {
                 userId, ConversationSession.SessionStatus.ACTIVE,
                 org.springframework.data.domain.PageRequest.of(page, size)).getContent();
     }
+
+    /**
+     * 软删除会话
+     */
+    @Transactional
+    public boolean deleteConversation(String conversationId, String userId) {
+        try {
+            int updated = sessionRepository.softDeleteByConversationIdAndUserId(conversationId, userId);
+            if (updated > 0) {
+                // 同步清理Redis中的会话列表（非强制）
+                String conversationKey = REDIS_CONVERSATION_PREFIX + conversationId;
+                redisTemplate.delete(conversationKey);
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            log.error("软删除会话失败: {}", e.getMessage(), e);
+            return false;
+        }
+    }
     
     /**
      * 保存到Redis

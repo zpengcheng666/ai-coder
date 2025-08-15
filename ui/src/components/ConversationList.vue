@@ -63,7 +63,7 @@
 </template>
 
 <script>
-import { getUserConversations, createConversation } from '../api/chatApi.js'
+import { getUserConversations, createConversation, deleteConversation as deleteConversationApi } from '../api/chatApi.js'
 import { formatTime } from '../utils/index.js'
 
 export default {
@@ -146,10 +146,20 @@ export default {
       }
     },
 
-    deleteConversation(conversation) {
-      if (confirm(`确定要删除会话"${conversation.title}"吗？`)) {
-        // 这里应该调用删除API，但后端暂时没有提供删除接口
-        console.log('删除会话:', conversation)
+    async deleteConversation(conversation) {
+      if (!conversation || !conversation.conversationId) return
+      if (!confirm(`确定要删除会话"${conversation.title}"吗？`)) return
+      try {
+        await deleteConversationApi(conversation.conversationId, this.userId)
+        // 成功后刷新列表
+        await this.loadConversations()
+        // 如果删除的是当前会话，通知父组件清空选择
+        if (this.currentConversationId === conversation.conversationId) {
+          this.$emit('conversation-selected', null)
+        }
+      } catch (error) {
+        this.error = '删除会话失败'
+        console.error('删除会话失败:', error)
       }
     },
 

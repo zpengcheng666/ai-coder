@@ -53,4 +53,13 @@ public interface ConversationSessionRepository extends JpaRepository<Conversatio
     @Query("SELECT cs FROM ConversationSession cs WHERE cs.status = 'ACTIVE' " +
            "AND cs.lastActiveTime < :archiveTime")
     List<ConversationSession> findSessionsToArchive(@Param("archiveTime") LocalDateTime archiveTime);
+
+    /**
+     * 软删除会话（将状态置为DELETED）
+     */
+    @Modifying
+    @Query("UPDATE ConversationSession cs SET cs.status = 'DELETED', cs.updateTime = CURRENT_TIMESTAMP " +
+           "WHERE cs.conversationId = :conversationId AND cs.userId = :userId")
+    int softDeleteByConversationIdAndUserId(@Param("conversationId") String conversationId,
+                                            @Param("userId") String userId);
 }

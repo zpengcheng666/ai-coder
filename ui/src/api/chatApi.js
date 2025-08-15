@@ -132,6 +132,24 @@ export async function getUserConversations(userId, page = 0, size = 20) {
 }
 
 /**
+ * 删除会话（软删除）
+ * @param {string} conversationId 会话ID
+ * @param {string} userId 用户ID
+ * @returns {Promise<Object>} 返回删除结果
+ */
+export async function deleteConversation(conversationId, userId) {
+    try {
+        const response = await axios.delete(`${API_BASE_URL}/ai/conversation/${conversationId}`, {
+            params: { userId }
+        })
+        return response.data
+    } catch (error) {
+        console.error('删除会话失败:', error)
+        throw error
+    }
+}
+
+/**
  * 添加文档到RAG知识库
  * @param {string} filePath 文件路径
  * @returns {Promise<Object>} 返回添加结果

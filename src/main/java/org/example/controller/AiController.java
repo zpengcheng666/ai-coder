@@ -182,6 +182,32 @@ public class AiController {
     }
 
     /**
+     * 删除会话（软删除）
+     */
+    @DeleteMapping("/conversation/{conversationId}")
+    public ResponseEntity<Map<String, Object>> deleteConversation(
+            @PathVariable String conversationId,
+            @RequestParam String userId) {
+        try {
+            boolean success = conversationStorageService.deleteConversation(conversationId, userId);
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", success);
+            if (success) {
+                result.put("message", "会话删除成功");
+                return ResponseEntity.ok(result);
+            } else {
+                result.put("error", "未找到会话或无权限");
+                return ResponseEntity.status(404).body(result);
+            }
+        } catch (Exception e) {
+            log.error("删除会话失败", e);
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", "删除会话失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(error);
+        }
+    }
+
+    /**
      * 添加文档到RAG知识库
      */
     @PostMapping("/rag/document")
